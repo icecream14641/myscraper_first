@@ -1,1 +1,6 @@
-"# myscraper_first" 
+"# myscraper_first"
+- - -
+```
+npm install
+node myscraper
+```
