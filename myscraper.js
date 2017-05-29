@@ -44,16 +44,21 @@ request(url, function (error, response, body) {
           $ = cheerio.load(body);
 
           // register
-          var name = $("#info > table:nth-child(1) > tbody > tr:nth-child(18) > td").text() || "不知名先生";
+          var name = $("#info > table:nth-child(1) > tbody > tr:nth-child(18) > td").text();
           console.log("name = " + name);
           var gender = name.slice(1, 3)=="先生" ? "male" : "female";
           console.log("gender = " + gender);
-          var phone = $("#info > table:nth-child(1) > tbody > tr:nth-child(20) > td").text() || "不留電話";
+          var phone = $("#info > table:nth-child(1) > tbody > tr:nth-child(20) > td").text();
           console.log("phone = " + phone);
-          var addr = $("#info > table:nth-child(1) > tbody > tr:nth-child(2) > td > div").attr("title") || "不留地址";
+          var addr = $("#info > table:nth-child(1) > tbody > tr:nth-child(2) > td > div").attr("title");
           console.log("addr = " + addr);
           var address = "彰化縣" + addr;
           console.log("address = " + address);
+
+          if(name.length == 0 || gender.length == 0 || phone.length == 0 || addr.length == 0){
+            console.log("有一個欄位為0");
+            return;
+          }
 
           request.post({
             headers: {'Accept': 'application/json',
@@ -70,65 +75,94 @@ request(url, function (error, response, body) {
                      })
           }, function(error, response, body){
             console.log("response = ");
-            console.log(JSON.stringify(body));
+            console.log(JSON.parse(body));
 
             if(body.indexOf("success") !== -1){ // if success and to login to have the token
-              // login
+              // solve validation
+              console.log("phone = " + phone);
               request.post({
-                headers: {'Accept': 'application/json',
-                          'Content-Type': 'application/json'},
-                url:     'http://test-zzpengg.c9users.io:8080/user/login',
+                headers: {'content-type' : 'application/json'},
+                url:     'http://test-zzpengg.c9users.io:8080/user',
                 body:    JSON.stringify({
-                           account: account,
-                           password: password
+                           account: phone
                          })
               }, function(error, response, body){
-                console.log(body);
-
-                // to check token
-
-                // create house_data
-                var title = addr.slice(3);
-                console.log("title = " + title);
-                var type = $("#info > table:nth-child(1) > tbody > tr:nth-child(6) > td:nth-child(1)").text().slice(0, 2);
-                console.log("type = " + type);
-                var rent = $("#info > table:nth-child(1) > tbody > tr:nth-child(6) > td:nth-child(3)").text().slice(2, 6);
-                console.log("rent = " + rent);
-                var addition = $("#info > table:nth-child(1) > tbody > tr:nth-child(9) > td").text().trim();
-                console.log("addition = " + addition);
-
-                var checknet = addition.indexOf("網路") == -1 ? true : false ;
-                var checkele = addition.indexOf("電") == -1 ? true : false ;
-                var checkwater = addition.indexOf("水") == -1 ? true : false;
-                console.log("丸子三兄弟 = " + checknet + " " + checkele + " " + checkwater);
-                var remark = $("#info > table:nth-child(1) > tbody > tr:nth-child(16) > td").text().trim();
-                console.log("remark = " + remark);
-                var area = "進德";
-
-                var vacancy_temp = $("#info > table:nth-child(1) > tbody > tr:nth-child(6) > td:nth-child(2)").text().split("/");
-                console.log("va_temp = " + vacancy_temp);
-                vacancy = vacancy_temp[1].slice(2, 3);
-                console.log("vacancy = " + vacancy);
-
-                request.post({ // create start
-                  headers: {'content-type' : 'application/json', 'x-access-token' : 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOjk1NTUsImV4cCI6MTQ5NjM3MTUyOTcxNywibmFtZSI6IuWKieWtkOW9rCJ9.D48WapvuDBLkOIZxcJWbFsO4H0VLR2-uMjNnRxaxwE0'},
-                  url:     'http://test-zzpengg.c9users.io:8080/house/createMyHouse',
-                  body:    JSON.stringify({
-                            title: title,
-                            area: area,
-                            address: address,
-                            vacancy: vacancy,
-                            rent: rent,
-                            checknet: checknet,
-                            checkele: checkele,
-                            checkwater: checkwater,
-                            type: type,
-                            remark: remark
-                          })
+                console.log("solve validation = ");
+                console.log( JSON.parse(body) );
+                body = JSON.parse(body);
+                console.log(body.id);
+                console.log("id = " + body.id);
+                request.post({
+                  headers: {'content-type' : 'application/json'},
+                  url:     'http://test-zzpengg.c9users.io:8080/user/allTrue',
                 }, function(error, response, body){
-                  console.log(response);
-                }); // create end
+                  console.log( JSON.parse(body) );
+
+                  // login
+                  request.post({
+                    headers: {'Accept': 'application/json',
+                              'Content-Type': 'application/json'},
+                    url:     'http://test-zzpengg.c9users.io:8080/user/login',
+                    body:    JSON.stringify({
+                               account: phone,
+                               password: "123456"
+                             })
+                  }, function(error, response, body){
+                    console.log("login = ");
+                    console.log(JSON.parse(body) );
+                    body = JSON.parse(body);
+
+                    // to check token
+                    console.log("token = " + body.token);
+                    var token = body.token;
+
+                    // create house_data
+                    var title = addr.slice(3);
+                    console.log("title = " + title);
+                    var type = $("#info > table:nth-child(1) > tbody > tr:nth-child(6) > td:nth-child(1)").text().slice(0, 2);
+                    console.log("type = " + type);
+                    var rent = $("#info > table:nth-child(1) > tbody > tr:nth-child(6) > td:nth-child(3)").text().slice(2, 6);
+                    console.log("rent = " + rent);
+                    var addition = $("#info > table:nth-child(1) > tbody > tr:nth-child(9) > td").text().trim();
+                    console.log("addition = " + addition);
+
+                    var checknet = addition.indexOf("網路") == -1 ? true : false ;
+                    var checkele = addition.indexOf("電") == -1 ? true : false ;
+                    var checkwater = addition.indexOf("水") == -1 ? true : false;
+                    console.log("丸子三兄弟 = " + checknet + " " + checkele + " " + checkwater);
+                    var remark = $("#info > table:nth-child(1) > tbody > tr:nth-child(16) > td").text().trim();
+                    console.log("remark = " + remark);
+                    var area = "進德";
+
+                    var vacancy_temp = $("#info > table:nth-child(1) > tbody > tr:nth-child(6) > td:nth-child(2)").text().split("/");
+                    console.log("va_temp = " + vacancy_temp);
+                    vacancy = vacancy_temp[1].slice(2, 3);
+                    console.log("vacancy = " + vacancy);
+
+                    request.post({ // create start
+                      headers: {'content-type' : 'application/json', 'x-access-token' : token},
+                      url:     'http://test-zzpengg.c9users.io:8080/house/createMyHouse',
+                      body:    JSON.stringify({
+                                title: title,
+                                area: area,
+                                address: address,
+                                vacancy: vacancy,
+                                rent: rent,
+                                checknet: checknet,
+                                checkele: checkele,
+                                checkwater: checkwater,
+                                type: type,
+                                remark: remark
+                              })
+                    }, function(error, response, body){
+                      // console.log(response);
+                    }); // create end
+                  });
+                });
+
               });
+
+
 
 
 
