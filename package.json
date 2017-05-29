@@ -1,0 +1,21 @@
+{
+  "name": "myscraper",
+  "version": "1.0.0",
+  "description": "\"# myscraper_first\"\r - - -\r ```\r npm install\r node myscraper\r ```",
+  "main": "myscraper.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zzpengg/myscraper_first.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zzpengg/myscraper_first/issues"
+  },
+  "homepage": "https://github.com/zzpengg/myscraper_first#readme"
+}

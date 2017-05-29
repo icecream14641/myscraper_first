@@ -42,6 +42,17 @@ request(url, function (error, response, body) {
       request(house_url[i], function(err, response, body){
         if(!err){
           $ = cheerio.load(body);
+
+          // register
+          var name = $("#info > table:nth-child(1) > tbody > tr:nth-child(18) > td").text();
+          console.log("name = " + name);
+          var gender = name.slice(1, 3)=="先生" ? "male" : "female";
+          console.log("gender = " + gender);
+          var phone = $("#info > table:nth-child(1) > tbody > tr:nth-child(20) > td").text();
+          console.log("phone = " + phone);
+
+
+          // create house_data
           var addr = $("#info > table:nth-child(1) > tbody > tr:nth-child(2) > td > div").attr("title");
           console.log("addr = " + addr);
           var title = addr.slice(3);
@@ -60,7 +71,12 @@ request(url, function (error, response, body) {
           console.log("丸子三兄弟 = " + checknet + " " + checkele + " " + checkwater);
           var remark = $("#info > table:nth-child(1) > tbody > tr:nth-child(16) > td").text().trim();
           console.log("remark = " + remark);
+          var area_temp = $("#route > div > div > div:nth-child(2) > table > tbody > tr > td.adp-text").text();
+          console.log("area_temp = " + area_temp);
           var area = "進德";
+
+          area = area_temp.indexOf("進德")==-1 ? "寶山" : "進德";
+
           var vacancy_temp = $("#info > table:nth-child(1) > tbody > tr:nth-child(6) > td:nth-child(2)").text().split("/");
           console.log("va_temp = " + vacancy_temp);
           vacancy = vacancy_temp[1].slice(2, 3);
@@ -84,6 +100,7 @@ request(url, function (error, response, body) {
           }, function(error, response, body){
             console.log(response);
           });
+
         }else{
           console.log("擷取錯誤2：" + error);
         }
