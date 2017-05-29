@@ -3,10 +3,10 @@ var cheerio = require("cheerio");
 
 // 台南市的氣溫
 var url = "http://house.nfu.edu.tw/NCUE/table.html";
-
+var DATA_LENGTH = 8;
 // 取得網頁資料
 request(url, function (error, response, body) {
-  if (!error) {
+  if (!error) { // 抓取網頁資料 無錯誤的話
 
     // 用 cheerio 解析 html 資料
     var $ = cheerio.load(body);
@@ -34,11 +34,12 @@ request(url, function (error, response, body) {
 
     var house_url = [];
 
-    for(var i=2;i<10;i++){
+    for(var i=2;i<DATA_LENGTH + 2;i++){ // 抓取網頁的房屋資料所在網址 共DATA_LENGTH個
       var aa = $("#housetable > table > tbody > tr:nth-child("+ i +") > td:nth-child(2) > a").attr("href");
       house_url.push(aa);
     }
-    for(var i=0;i<8;i++){
+
+    for(var i=0;i<DATA_LENGTH;i++){ // 一筆一筆抓取
       request(house_url[i], function(err, response, body){
         if(!err){
           $ = cheerio.load(body);
@@ -57,49 +58,36 @@ request(url, function (error, response, body) {
 
           if(name.length == 0 || gender.length == 0 || phone.length == 0 || addr.length == 0){
             console.log("有一個欄位為0");
-            return;
-          }
+          }else{ // 全部欄位都有抓到
 
-          request.post({
-            headers: {'Accept': 'application/json',
-                      'Content-Type': 'application/json'},
-            url:     'http://test-zzpengg.c9users.io:8080/user/register',
-            body:    JSON.stringify({
-                       name: name,
-                       phone: phone,
-                       gender: gender,
-                       address: address,
-                       account: phone,
-                       password: "123456",
-                       email: "cfps91177@gmail.com"
-                     })
-          }, function(error, response, body){
-            console.log("response = ");
-            console.log(JSON.parse(body));
+            request.post({ // register start
+              headers: {'Accept': 'application/json',
+                        'Content-Type': 'application/json'},
+              url:     'http://test-zzpengg.c9users.io:8080/user/register',
+              body:    JSON.stringify({
+                         name: name,
+                         phone: phone,
+                         gender: gender,
+                         address: address,
+                         account: phone,
+                         password: "123456",
+                         email: "cfps91177@gmail.com"
+                       })
+            }, function(error, response, body){
+              console.log("response = ");
+              console.log(JSON.parse(body));
 
-            if(body.indexOf("success") !== -1){ // if success and to login to have the token
-              // solve validation
-              console.log("phone = " + phone);
-              request.post({
-                headers: {'content-type' : 'application/json'},
-                url:     'http://test-zzpengg.c9users.io:8080/user',
-                body:    JSON.stringify({
-                           account: phone
-                         })
-              }, function(error, response, body){
-                console.log("solve validation = ");
-                console.log( JSON.parse(body) );
-                body = JSON.parse(body);
-                console.log(body.id);
-                console.log("id = " + body.id);
-                request.post({
+              if(body.indexOf("success") !== -1){ // if success and to login to have the token
+                // solve validation
+
+                request.post({ // set validation all true
                   headers: {'content-type' : 'application/json'},
                   url:     'http://test-zzpengg.c9users.io:8080/user/allTrue',
                 }, function(error, response, body){
                   console.log( JSON.parse(body) );
 
                   // login
-                  request.post({
+                  request.post({ // login
                     headers: {'Accept': 'application/json',
                               'Content-Type': 'application/json'},
                     url:     'http://test-zzpengg.c9users.io:8080/user/login',
@@ -107,7 +95,7 @@ request(url, function (error, response, body) {
                                account: phone,
                                password: "123456"
                              })
-                  }, function(error, response, body){
+                  }, function(error, response, body){ // login functioin
                     console.log("login = ");
                     console.log(JSON.parse(body) );
                     body = JSON.parse(body);
@@ -157,33 +145,17 @@ request(url, function (error, response, body) {
                     }, function(error, response, body){
                       // console.log(response);
                     }); // create end
-                  });
-                });
-
-              });
-
-
-
-
-
-            } // success end
-
-
-
-          });
-
-
-
-
-
+                  }); // login end
+                }); // set validation all true end
+              } // success register end
+            });// register end
+          }// else 全部欄位都有抓到end
         }else{
           console.log("擷取錯誤2：" + error);
         }
       });
-    }
-
-
-  } else {
+    } // for 迴圈 針對 每個房屋資料的處理
+  } else { // 抓取網頁資料 發生錯誤
     console.log("擷取錯誤：" + error);
   }
 });
