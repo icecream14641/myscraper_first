@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "\"# myscraper_first\"\r - - -\r ```\r npm install\r node myscraper\r ```",
   "main": "myscraper.js",
-  "dependencies": {},
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.1",
+    "request": "^2.81.0"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
